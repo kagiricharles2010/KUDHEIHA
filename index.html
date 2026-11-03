@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025–2029 CBA Pay Estimator for KUDHEIHA (Demo)</title>
+    <style>
+        :root {
+            --primary: #1b4332;
+            --primary-light: #2d6a4f;
+            --accent: #d8f3dc;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #212529;
+            --text-muted: #6c757d;
+            --border: #dee2e6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding: 15px; }
+        .container { max-width: 1200px; margin: 0 auto; background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .demo-banner { background: #fff3cd; color: #856404; padding: 8px 12px; font-size: 0.85rem; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ffeeba; }
+        h1 { font-size: 1.6rem; color: var(--primary); margin-bottom: 5px; }
+        p.subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
+        
+        .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        /* Section Eyebrow Labels */
+        .column-header {
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            background: #e9f5ed;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 900px) { 
+            .layout { grid-template-columns: 1fr; }
+            .column-header.projections-header {
+                margin-top: 25px;
+                padding-top: 10px;
+                border-top: 2px dashed var(--border);
+            }
+        }
+        
+        .panel { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+        .panel h2 { font-size: 1.1rem; color: var(--primary-light); margin-bottom: 12px; border-bottom: 2px solid var(--accent); padding-bottom: 4px; }
+        
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
+        select, input[type="number"], input[type="text"] { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; }
+        .help-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+        
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.85rem; }
+        .sub-box { border-left: 3px solid var(--primary-light); padding-left: 10px; margin-top: 8px; margin-bottom: 10px; }
+        
+        /* Headline Cards Grid */
+        .headline-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        @media (max-width: 600px) { .headline-grid { grid-template-columns: 1fr; } }
+        
+        .headline-card { border: 1px solid var(--border); border-radius: 8px; padding: 12px; background: #fff; }
+        .headline-card.green { background: #1b4332; color: #fff; border: none; }
+        .headline-card.green .hl-sub, .headline-card.green .hl-footer { color: #d8f3dc; }
+        .hl-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; margin-bottom: 4px; }
+        .hl-val { font-size: 1.25rem; font-weight: 800; margin: 4px 0; }
+        .hl-footer { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: var(--accent); color: var(--primary); font-weight: 600; }
+        tr.highlight-row { background-color: #f1f8f5; font-weight: bold; }
+
+        /* Section 5 Visual Bars Styling */
+        .sec5-item { display: grid; grid-template-columns: 1.2fr 2fr 1.2fr; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; border-bottom: 1px solid #f1f3f5; padding-bottom: 8px; }
+        .sec5-label { font-weight: 600; color: var(--text); }
+        .sec5-sub { font-size: 0.75rem; color: var(--text-muted); }
+        .sec5-bar-bg { background: #f1f3f5; border-radius: 4px; height: 16px; width: 100%; overflow: hidden; position: relative; }
+        .sec5-bar-fill { background: var(--primary); height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+        .sec5-amounts { text-align: right; }
+        .sec5-val { font-weight: bold; color: var(--primary); }
+        .sec5-cum { font-size: 0.75rem; color: var(--text-muted); }
+        .sec5-total-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 8px; border-top: 2px solid var(--text); font-weight: bold; font-size: 0.95rem; }
+        
+        /* Developer Action Button Styling (Currently Hidden) */
+        .pdf-box { margin-top: 15px; text-align: center; }
+        .pdf-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #c62828; color: #fff; border: none; border-radius: 6px; padding: 11px 20px; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
+        .pdf-btn:hover { background: #a51f1f; }
+        .pdf-note { font-size: 0.75rem; color: var(--text-muted); margin: 6px 0 0; line-height: 1.4; }
+        .print-summary { display: none; }
+        #printReport { display: none; }
+        .rep { font-size: 11.5px; color: #111; }
+        .rep h3 { font-size: 17px; margin: 0 0 2px; }
+        .rep .meta { color: #555; font-size: 11px; margin-bottom: 8px; }
+        .rep .grid { display: grid; grid-template-columns: repeat(3, max-content 1fr); gap: 2px 10px; margin: 6px 0 10px; }
+        .rep .grid dt { color: #555; } .rep .grid dd { margin: 0; font-weight: 600; }
+        .rep table { font-size: 11px; width: 100%; border-collapse: collapse; margin: 0; }
+        .rep th, .rep td { padding: 3px 6px; border-bottom: 1px solid #dcdfdc; text-align: left; }
+        .rep th { background: #f1f3f1; color: #5d6762; font-weight: 700; }
+        .rep .n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .rep tr.tot td { font-weight: 700; border-top: 2px solid #111; }
+        .rep p { margin: 4px 0; }
+        .rep .foot { color: #555; font-size: 10px; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 6px; }
+        .rep .muted { color: #555; }
+        .rep tr.sub td { color: #5d6762; font-style: italic; background: #fafbfa; }
+        .rep .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 4px 0 12px; }
+        .rep .tile { border: 1px solid #dcdfdc; border-radius: 8px; padding: 8px 10px; }
+        .rep .tile .k { font-size: 10.5px; color: #5d6762; font-weight: 600; }
+        .rep .tile .v { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .rep .tile .s { font-size: 10px; color: #5d6762; }
+        .rep .tile.hl { background: #1b4332; border-color: #1b4332; color: #fff; }
+        .rep .tile.hl .k, .rep .tile.hl .s { color: #d8f3dc; }
+        .rep .inpdf { margin-top: 14px; padding: 8px 10px; border: 1px solid #555; font-size: 11px; }
+        .rep-page { break-after: page; }
+        .rep-page.last { break-after: auto; }
+        .rep .detail .panel { padding: 10px 12px; margin-bottom: 10px; break-inside: avoid; }
+        .rep .detail .panel h2 { font-size: 14px; }
+        @media print {
+            @page { size: A4; margin: 11mm 11mm 14mm; @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 9px; color: #777; } }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body { background: #fff; }
+            body > *:not(#printReport) { display: none !important; }
+            #printReport { display: block; }
+            .rep tr { break-inside: avoid; }
+        }
+        .dev-action-container { margin-top: 15px; text-align: center; display: block; }
+        .dev-btn { background-color: #2d6a4f; color: white; border: none; border-radius: 6px; padding: 12px 20px; font-size: 0.9rem; font-weight: bold; cursor: pointer; width: 100%; transition: background 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .dev-btn:hover { background-color: #1b4332; }
+        .dev-info-box { display: none; margin-top: 10px; background: #e9f5ed; border: 1px solid #b7e4c7; color: #1b4332; padding: 10px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; }
+
+        .disclaimer { font-size: 0.75rem; color: var(--text-muted); margin-top: 20px; border-top: 1px solid var(--border); padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="demo-banner">
+        <strong>Demo</strong> · Unofficial estimate for KUDHEIHA members in public universities, based on the Return to Work Formula of 30 October 2026.
+    </div>
+
+    <h1>2025–2029 CBA Pay Estimator (KUDHEIHA)</h1>
+    <p class="subtitle">Estimate new salaries, allowances, and arrears for KUDHEIHA Workers (Grades 1–4) in public universities and constituent colleges. Starts from your June 2025 payslip; easy to check diagonally against Schedule I.</p>
+
+    <div class="layout">
+        <!-- LEFT COLUMN: INPUTS -->
+        <div>
+            <div class="column-header">Your Details</div>
+
+            <div class="panel">
+                <h2 id="spHead">1. Starting Point (June 2025)</h2>
+
+                <div class="checkbox-group">
+                    <input autocomplete="off" type="checkbox" id="joinToggle" onchange="toggleJoin(); calculate();">
+                    <label for="joinToggle" style="display:inline; font-weight:normal;">I joined after June 2025</label>
+                </div>
+                <div id="joinBox" class="sub-box" style="display:none;">
+                    <div class="form-group">
+                        <label for="joinMonth">Month Joined</label>
+                        <select autocomplete="off" id="joinMonth" onchange="toggleJoin(); calculate();"><option value="2025-07">July 2025</option><option value="2025-08">August 2025</option><option value="2025-09">September 2025</option><option value="2025-10">October 2025</option><option value="2025-11">November 2025</option><option value="2025-12">December 2025</option><option value="2026-01" selected>January 2026</option><option value="2026-02">February 2026</option><option value="2026-03">March 2026</option><option value="2026-04">April 2026</option><option value="2026-05">May 2026</option><option value="2026-06">June 2026</option><option value="2026-07">July 2026</option><option value="2026-08">August 2026</option><option value="2026-09">September 2026</option><option value="2026-10">October 2026</option><option value="2026-11">November 2026</option><option value="2026-12">December 2026</option><option value="2027-01">January 2027</option><option value="2027-02">February 2027</option><option value="2027-03">March 2027</option><option value="2027-04">April 2027</option><option value="2027-05">May 2027</option><option value="2027-06">June 2027</option><option value="2027-07">July 2027</option><option value="2027-08">August 2027</option><option value="2027-09">September 2027</option><option value="2027-10">October 2027</option><option value="2027-11">November 2027</option><option value="2027-12">December 2027</option><option value="2028-01">January 2028</option><option value="2028-02">February 2028</option><option value="2028-03">March 2028</option><option value="2028-04">April 2028</option><option value="2028-05">May 2028</option><option value="2028-06">June 2028</option><option value="2028-07">July 2028</option><option value="2028-08">August 2028</option><option value="2028-09">September 2028</option><option value="2028-10">October 2028</option><option value="2028-11">November 2028</option><option value="2028-12">December 2028</option><option value="2029-01">January 2029</option><option value="2029-02">February 2029</option><option value="2029-03">March 2029</option><option value="2029-04">April 2029</option><option value="2029-05">May 2029</option><option value="2029-06">June 2029</option></select>
+                        <div class="help-text">Then enter the grade and notch on your first payslip. Any promotion must be after this month.</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gradeSelect" id="gradeLbl">Grade on June 2025 Payslip</label>
+                    <select autocomplete="off" id="gradeSelect" onchange="updateNotches(); onBaseGradeChange(); calculate();">
+                        <option value="4">Grade 4</option><option value="3">Grade 3</option><option value="2" selected>Grade 2</option><option value="1">Grade 1</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="notchSelect" id="notchLbl">Notch on June 2025 Payslip</label>
+                    <select autocomplete="off" id="notchSelect" onchange="calculate();"></select>
+                    <div class="help-text" id="notchHelp">Shows 2024/25 basic pay scale notches with basic salaries in brackets.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="incrementMonth">Increment Month</label>
+                    <select autocomplete="off" id="incrementMonth" onchange="calculate();">
+                        <option value="7" selected>July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                    </select>
+                    <div class="help-text">Month when your annual increment is normally applied.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="startMonth">New Salaries Implementation Start</label>
+                    <select autocomplete="off" id="startMonth" onchange="toggleJoin(); calculate();">
+                        <option value="2026-11">November 2026</option>
+                        <option value="2026-12" selected>December 2026</option>
+                        <option value="2027-01">January 2027</option>
+                    </select>
+                </div>
+
+                <!-- PROMOTIONS SECTION -->
+                <div style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 12px;">
+                    <label style="font-weight:700; margin-bottom:6px;">Did you get a promotion within the CBA period (from June 2025)?</label>
+                    
+                    <div class="checkbox-group">
+                        <input autocomplete="off" type="checkbox" id="promo1Toggle" onchange="togglePromo1(); calculate();">
+                        <label for="promo1Toggle" style="display:inline; font-weight:normal;">First promotion</label>
+                    </div>
+                    <div id="promo1Box" class="sub-box" style="display:none;">
+                        <div class="form-group">
+                            <label>Effective Month</label>
+                            <select autocomplete="off" id="promo1Month" onchange="calculate();">
+                                <option value="2025-07">July 2025</option><option value="2025-08">August 2025</option><option value="2025-09">September 2025</option><option value="2025-10">October 2025</option><option value="2025-11">November 2025</option><option value="2025-12">December 2025</option><option value="2026-01">January 2026</option><option value="2026-02">February 2026</option><option value="2026-03">March 2026</option><option value="2026-04">April 2026</option><option value="2026-05">May 2026</option><option value="2026-06">June 2026</option><option value="2026-07" selected>July 2026</option><option value="2026-08">August 2026</option><option value="2026-09">September 2026</option><option value="2026-10">October 2026</option><option value="2026-11">November 2026</option><option value="2026-12">December 2026</option><option value="2027-01">January 2027</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>New Grade</label>
+                            <select autocomplete="off" id="promo1Grade" onchange="updatePromoNotches(1); calculate();">
+                                <option value="4">Grade 4</option><option value="3" selected>Grade 3</option><option value="2">Grade 2</option><option value="1">Grade 1</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>New Notch</label>
+                            <select autocomplete="off" id="promo1Notch" onchange="calculate();"></select>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group" style="margin-top: 10px;">
+                        <input autocomplete="off" type="checkbox" id="promo2Toggle" onchange="togglePromo2(); calculate();">
+                        <label for="promo2Toggle" style="display:inline; font-weight:normal;">Second promotion</label>
+                    </div>
+                    <div id="promo2Box" class="sub-box" style="display:none;">
+                        <div class="form-group">
+                            <label>Effective Month</label>
+                            <select autocomplete="off" id="promo2Month" onchange="calculate();">
+                                <option value="2026-07" selected>July 2026</option><option value="2026-08">August 2026</option><option value="2026-09">September 2026</option><option value="2026-10">October 2026</option><option value="2026-11">November 2026</option><option value="2026-12">December 2026</option><option value="2027-01">January 2027</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>New Grade</label>
+                            <select autocomplete="off" id="promo2Grade" onchange="updatePromoNotches(2); calculate();">
+                                <option value="4" selected>Grade 4</option><option value="3">Grade 3</option><option value="2">Grade 2</option><option value="1">Grade 1</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>New Notch</label>
+                            <select autocomplete="off" id="promo2Notch" onchange="calculate();"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>2. Allowances & Deductions</h2>
+                
+                <div class="form-group">
+                    <label for="houseInput">House Allowance on Your Payslip (KES/month)</label>
+                    <input autocomplete="off" type="number" id="houseInput" placeholder="e.g. as on your payslip" oninput="calculate();">
+                    <div class="help-text">Not in the RTWF and not changed by it, so it doesn't affect arrears. Enter it for an accurate take-home figure; blank counts as 0.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="commuterInput">Current Commuter Allowance (KES/month)</label>
+                    <input autocomplete="off" type="number" id="commuterInput" value="12000" oninput="calculate();">
+                    <div class="help-text">Your commuter allowance now. The RTWF rate is KES 18,000 for Grades 1–4.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="commuterPhase">Commuter Increase to KES 18,000</label>
+                    <select autocomplete="off" id="commuterPhase" onchange="calculate();">
+                        <option value="phased" selected>Phased over 3 years from Jul 2025</option>
+                        <option value="phased_impl">Phased over 3 years from new salaries start (no commuter arrears)</option>
+                        <option value="full">Full KES 18,000 from Jul 2025</option>
+                    </select>
+                    <div class="help-text">The RTWF says universities paying less "shall pay progressively within three (3) years" but doesn't set the timing.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pensionInput">Pension (% of basic)</label>
+                    <input autocomplete="off" type="number" id="pensionInput" value="7.5" step="0.5" oninput="calculate();">
+                </div>
+
+                <div class="checkbox-group">
+                    <input autocomplete="off" type="checkbox" id="deductNssf" checked onchange="calculate();">
+                    <label for="deductNssf" style="display:inline; font-weight:normal;">Deduct NSSF Tiered Contributions</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: HEADLINE CARDS & TABLES -->
+        <div>
+            <div class="column-header projections-header">Your Projections</div>
+            <div id="printSummary" class="print-summary"></div>
+
+            <!-- Headline Summary Cards Row -->
+            <div class="headline-grid">
+                <!-- Card 1: Green Headline -->
+                <div class="headline-card green">
+                    <div class="hl-title" id="hlCard1Title">December 2026 Basic Pay</div>
+                    <div class="hl-val" id="hlCard1Basic">KES 0</div>
+                    <div class="hl-footer" id="hlCard1Footer">Plus commuter + house = gross KES 0</div>
+                </div>
+
+                <!-- Card 2: 2025/26 Arrears -->
+                <div class="headline-card">
+                    <div class="hl-title" id="hlCard2Title">Arrears Jul 2025 – Jun 2026 (gross)</div>
+                    <div class="hl-val" id="hlCard2Gross">KES 0</div>
+                    <div class="hl-footer" id="hlCard2Instalments">3 instalments of KES 0</div>
+                </div>
+
+                <!-- Card 3: Dynamic Preceding Arrears -->
+                <div class="headline-card">
+                    <div class="hl-title" id="hlCard3Title">Arrears Jul – Nov 2026 (gross)</div>
+                    <div class="hl-val" id="hlCard3Gross">KES 0</div>
+                    <div class="hl-footer" id="hlCard3Sub">Paid with the January 2027 salary</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>3. Salary & Allowance Schedules</h2>
+                <div id="salaryTableContainer"></div>
+            </div>
+
+            <div class="panel">
+                <h2>4. Take-Home Pay (Current vs New)</h2>
+                <div id="takeHomeComparisonContainer"></div>
+            </div>
+
+            <!-- SECTION 5: CUMULATIVE GAIN -->
+            <div class="panel">
+                <h2 id="sec5Title">5. Cumulative gain from the new CBA, Jul 2025 – Jun 2029</h2>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Extra pay you get only because of the new CBA, compared with staying on 2024/25 rates with the same increments and promotions. Gross, before tax.</p>
+                <div id="section5Container"></div>
+            </div>
+
+            <!-- Developer Action Button (Currently Switched Off via display: none) -->
+            <div class="pdf-box">
+                <button type="button" class="pdf-btn" id="pdfBtn" onclick="downloadPdf()"><svg class="pdf-ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 11v6"/><path d="M9.5 14.5 12 17l2.5-2.5"/></svg><span>Download PDF</span></button>
+                <p class="pdf-note">Opens your print window: choose <b>Save as PDF</b>. On a shared computer, delete the PDF from Downloads when you're done.</p>
+            </div>
+
+            <div class="dev-action-container">
+                <button class="dev-btn" onclick="toggleDevInfo()">💬 Questions &amp; Feedback</button>
+                <div id="devInfoBox" class="dev-info-box">
+                    WhatsApp/Call 0721643535 (Dr. Charles Kagiri, PhD)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="disclaimer">
+        <strong>Scope and disclaimer:</strong> Unofficial demo based on the KUDHEIHA Return to Work Formula schedules signed on 30 October 2026. Union dues are fixed at 2%. Nothing you enter is stored or sent, and the form clears when you refresh or leave the page.
+        Leave allowance (Schedule II) is unchanged by the agreement and paid once a year (36 working days of leave from 1 Jan 2027), so it isn't in arrears or monthly pay. The commuter phase-in timing isn't specified in the RTWF, so the option you choose is applied; arrears include the commuter increase.
+    </div>
+</div>
+
+<div id="printReport"></div>
+
+<script>
+    // Schedule II annual leave allowance (unchanged by the agreement; paid once a year)
+    const leaveAllowances = { 4: 5076, 3: 4913, 2: 4299, 1: 3867 };
+    // House allowance isn't in the KUDHEIHA RTWF: the user enters the amount on their payslip (same on old and new terms).
+    const houseAllowances = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    function houseNow() { return Math.max(0, parseFloat(String(document.getElementById("houseInput").value).replace(/,/g, "")) || 0); }
+    function syncHouse() { const v = houseNow(); [1, 2, 3, 4].forEach(g => houseAllowances[g] = v); }
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    // Schedule I, KUDHEIHA RTWF of 30 Oct 2026 (grades 1-4, notches 1-12; columns 2024/25 ... 2028/29)
+    const salaryTable = {
+        4: [[28261,29251,30275,31335,32432],[29392,30714,31789,32902,34054],[30569,32250,33379,34548,35758],[31792,33863,35049,36276,37546],[33065,35556,36801,38090,39424],[34388,37334,38641,39994,41394],[35763,39201,40574,41995,43465],[37195,41161,42602,44094,45638],[38684,43220,44733,46299,47920],[40231,45381,46970,48614,50316],[41841,47651,49319,51046,52833],[43515,50033,51785,53598,55474]],
+        3: [[25436,26327,27249,28203,29191],[26453,27643,28611,29613,30650],[27512,29026,30042,31094,32183],[28613,30478,31545,32650,33793],[29759,32003,33124,34284,35484],[30949,33603,34780,35998,37258],[32187,35284,36519,37798,39121],[33476,37048,38345,39688,41078],[34814,38901,40263,41673,43132],[36209,40847,42277,43757,45289],[37657,42890,44392,45946,47555],[39164,45034,46611,48243,49932]],
+        2: [[22637,23430,24251,25100,25979],[23544,24601,25463,26355,27278],[24486,25832,26737,27673,28642],[25466,27124,28074,29057,30074],[26486,28481,29478,30510,31578],[27545,29905,30952,32036,33158],[28648,31400,32499,33637,34815],[29794,32970,34124,35319,36556],[30986,34619,35831,37086,38385],[32226,36351,37624,38941,40304],[33515,38169,39505,40888,42320],[34856,40078,41481,42933,44436]],
+        1: [[19921,20619,21341,22088,22862],[20718,21651,22409,23194,24006],[21548,22733,23529,24353,25206],[22410,23871,24707,25572,26468],[23305,25065,25943,26852,27792],[24239,26318,27240,28194,29181],[25209,27635,28603,29605,30642],[26217,29017,30033,31085,32173],[27267,30468,31535,32639,33782],[28359,31991,33111,34270,35470],[29493,33591,34767,35984,37244],[30672,35271,36506,37784,39107]]
+    };
+
+    function formatCurrency(amount) {
+        return "KES " + Math.round(amount).toLocaleString();
+    }
+
+    function toggleDevInfo() {
+        const box = document.getElementById("devInfoBox");
+        box.style.display = (box.style.display === "block") ? "none" : "block";
+    }
+
+    // ---- Joiners (after June 2025) ----
+    // Timeline index i: 0 = June 2025 baseline, 1 = July 2025 ... 48 = June 2029.
+    const ixOf = ym => { const [y, m] = ym.split("-").map(Number); return (y - 2025) * 12 + (m - 6); };
+    const ixLabel = i => `${monthNames[(5 + i) % 12].substring(0, 3)} ${2025 + Math.floor((5 + i) / 12)}`;
+    const colOfIx = i => i < 1 ? 0 : Math.floor((i - 1) / 12) + 1;     // salary-table column (0 = 2024/25)
+    function joinIx() { return document.getElementById("joinToggle").checked ? ixOf(document.getElementById("joinMonth").value) : 0; }
+    function startIx() { return ixOf(document.getElementById("startMonth").value); }
+    // a joiner's first payslip is on 2024/25 rates until new salaries start, then on that year's new rates
+    function firstPayCol() { const J = joinIx(); return (J > 0 && J >= startIx()) ? colOfIx(J) : 0; }
+    function toggleJoin() {
+        const jn = document.getElementById("joinToggle").checked, col = firstPayCol();
+        document.getElementById("joinBox").style.display = jn ? "block" : "none";
+        document.getElementById("spHead").innerText = jn ? "1. Starting Point (First Payslip)" : "1. Starting Point (June 2025)";
+        document.getElementById("gradeLbl").innerText = jn ? "Grade on Your First Payslip" : "Grade on June 2025 Payslip";
+        document.getElementById("notchLbl").innerText = jn ? "Notch on Your First Payslip" : "Notch on June 2025 Payslip";
+        document.getElementById("notchHelp").innerText = jn
+            ? (col ? `You joined after new salaries started, so amounts are at ${["2024/25","2025/26","2026/27","2027/28","2028/29"][col]} rates.` : "Amounts are 2024/25 rates, as on your first payslip.")
+            : "Shows 2024/25 basic pay scale notches with basic salaries in brackets.";
+        updateNotches();
+    }
+
+    function updateNotches() {
+        const grade = document.getElementById("gradeSelect").value;
+        const col = firstPayCol();
+        const notchSelect = document.getElementById("notchSelect");
+        const currentSelected = notchSelect.value;
+        notchSelect.innerHTML = "";
+        const salaries2024 = salaryTable[grade];
+        for (let i = 0; i < salaries2024.length; i++) {
+            const opt = document.createElement("option");
+            opt.value = i;
+            if (currentSelected !== "" && parseInt(currentSelected) < salaries2024.length) {
+                if (i === parseInt(currentSelected)) opt.selected = true;
+            } else {
+                if (i === 8 && grade === "2") opt.selected = true;
+            }
+            opt.text = `Notch ${i + 1} (${formatCurrency(salaries2024[i][col])})`;
+            notchSelect.add(opt);
+        }
+        if (notchSelect.selectedIndex === -1 && notchSelect.options.length > 0) {
+            notchSelect.selectedIndex = 0;
+        }
+    }
+
+    function onBaseGradeChange() {
+        updateNotches();
+        if (document.getElementById("promo1Toggle").checked) setSmartPromoDefaults(1);
+        if (document.getElementById("promo2Toggle").checked) setSmartPromoDefaults(2);
+    }
+
+    function setSmartPromoDefaults(num) {
+        let referenceGrade, referenceNotchIdx;
+
+        if (num === 1) {
+            referenceGrade = parseInt(document.getElementById("gradeSelect").value);
+            referenceNotchIdx = parseInt(document.getElementById("notchSelect").value || 0);
+        } else {
+            if (document.getElementById("promo1Toggle").checked) {
+                referenceGrade = parseInt(document.getElementById("promo1Grade").value);
+                referenceNotchIdx = parseInt(document.getElementById("promo1Notch").value || 0);
+            } else {
+                referenceGrade = parseInt(document.getElementById("gradeSelect").value);
+                referenceNotchIdx = parseInt(document.getElementById("notchSelect").value || 0);
+            }
+        }
+
+        let targetGrade = Math.min(4, referenceGrade + 1);
+        const gradeSelectElem = document.getElementById(`promo${num}Grade`);
+        gradeSelectElem.value = targetGrade;
+
+        const currentBasic = salaryTable[referenceGrade][referenceNotchIdx][0];
+
+        const notchSelect = document.getElementById(`promo${num}Notch`);
+        notchSelect.innerHTML = "";
+        const newSalaries = salaryTable[targetGrade];
+        let bestNotchIdx = 0;
+        let foundHigher = false;
+
+        for (let i = 0; i < newSalaries.length; i++) {
+            const opt = document.createElement("option");
+            opt.value = i;
+            opt.text = `Notch ${i + 1} (${formatCurrency(newSalaries[i][0])})`;
+            notchSelect.add(opt);
+
+            if (!foundHigher && newSalaries[i][0] > currentBasic) {
+                bestNotchIdx = i;
+                foundHigher = true;
+            }
+        }
+        notchSelect.value = bestNotchIdx;
+    }
+
+    function togglePromo1() {
+        const show = document.getElementById("promo1Toggle").checked;
+        document.getElementById("promo1Box").style.display = show ? "block" : "none";
+        if (show) {
+            setSmartPromoDefaults(1);
+        }
+    }
+
+    function togglePromo2() {
+        const show = document.getElementById("promo2Toggle").checked;
+        document.getElementById("promo2Box").style.display = show ? "block" : "none";
+        if (show) {
+            setSmartPromoDefaults(2);
+        }
+    }
+
+    function updatePromoNotches(num) {
+        const grade = document.getElementById(`promo${num}Grade`).value;
+        const notchSelect = document.getElementById(`promo${num}Notch`);
+        notchSelect.innerHTML = "";
+        const salaries2024 = salaryTable[grade];
+        for (let i = 0; i < salaries2024.length; i++) {
+            const opt = document.createElement("option");
+            opt.value = i;
+            opt.text = `Notch ${i + 1} (${formatCurrency(salaries2024[i][0])})`;
+            notchSelect.add(opt);
+        }
+    }
+
+    // PAYE (monthly bands, unchanged by the Finance Act 2026): 10% to 24,000; 25% to 32,333; 30% to 500,000; 32.5% to 800,000; 35% above. Relief KES 2,400.
+    function calculateTax(taxableIncome) {
+        const bands = [[24000, 0.10], [8333, 0.25], [467667, 0.30], [300000, 0.325], [Infinity, 0.35]];
+        let rest = Math.max(0, taxableIncome), tax = 0;
+        for (const [width, rate] of bands) { const x = Math.min(rest, width); tax += x * rate; rest -= x; if (rest <= 0) break; }
+        return Math.max(0, tax - 2400);
+    }
+
+    // NSSF Year 4 (from Feb 2026), 6% employee share:
+    // Tier I on the first KES 9,000 (max 540) + Tier II on pay from 9,000 to 108,000 (max 5,940). Total max 6,480.
+    function nssfTiers(pay) {
+        const t1 = 0.06 * Math.min(pay, 9000);
+        const t2 = 0.06 * Math.max(0, Math.min(pay, 108000) - 9000);
+        return { t1, t2, total: t1 + t2 };
+    }
+
+    // All statutory deductions for one month. Pension, NSSF, SHIF and Housing Levy come off before PAYE;
+    // tax relief for pension + NSSF is capped at KES 30,000 a month. Union dues are 2% of basic.
+    function deductions(gross, basic, pensionRate, withNssf) {
+        const n = withNssf ? nssfTiers(gross) : { t1: 0, t2: 0, total: 0 };
+        const pension = basic * pensionRate;
+        const pensionRelief = Math.min(pension, Math.max(0, 30000 - n.total));
+        const shif = gross * 0.0275, hl = gross * 0.015;
+        const taxable = Math.max(0, gross - n.total - pensionRelief - shif - hl);
+        const paye = calculateTax(taxable);
+        const union = basic * 0.02;
+        return { nssf: n, pension, shif, hl, taxable, paye, union, net: gross - n.total - pension - shif - hl - paye - union };
+    }
+
+    function getActiveGrade() {
+        const promo2Active = document.getElementById("promo2Toggle").checked;
+        const promo1Active = document.getElementById("promo1Toggle").checked;
+        if (promo2Active) return parseInt(document.getElementById("promo2Grade").value);
+        if (promo1Active) return parseInt(document.getElementById("promo1Grade").value);
+        return parseInt(document.getElementById("gradeSelect").value);
+    }
+
+    function getSalaryTimeline(startGrade, startNotch, incMonth, J = 0) {   // J: first month on staff (0 = June 2025 baseline)
+        let currentGrade = startGrade;
+        let currentNotch = startNotch;
+        let salaries = [];
+        let curY = 2025;
+        let curM = 6; // June 2025 baseline start
+
+        for (let i = 0; i < 49; i++) {   // June 2025 baseline + Jul 2025 ... Jun 2029
+            let ymStr = `${curY}-${String(curM).padStart(2, '0')}`;
+
+            // annual increment first (none in the June 2025 baseline month); a promotion in the same month then sets the notch
+            if (i > J && curM === incMonth) {   // first increment the next time the increment month comes round
+                if (currentNotch < 11) currentNotch++;
+            }
+
+            if (document.getElementById("promo1Toggle").checked) {
+                let p1m = document.getElementById("promo1Month").value;
+                if (ymStr === p1m && i > J) {
+                    currentGrade = parseInt(document.getElementById("promo1Grade").value);
+                    currentNotch = parseInt(document.getElementById("promo1Notch").value);
+                }
+            }
+            if (document.getElementById("promo2Toggle").checked) {
+                let p2m = document.getElementById("promo2Month").value;
+                if (ymStr === p2m && i > J) {
+                    currentGrade = parseInt(document.getElementById("promo2Grade").value);
+                    currentNotch = parseInt(document.getElementById("promo2Notch").value);
+                }
+            }
+
+            let colIdx = 0;
+            if (curY === 2025 && curM >= 7 || curY === 2026 && curM < 7) colIdx = 1;
+            else if (curY === 2026 && curM >= 7 || curY === 2027 && curM < 7) colIdx = 2;
+            else if (curY === 2027 && curM >= 7 || curY === 2028 && curM < 7) colIdx = 3;
+            else if (curY >= 2028 && curM >= 7 || curY > 2028) colIdx = 4;
+
+            let basicPay = salaryTable[currentGrade][currentNotch][colIdx];
+            
+            // Old-terms comparison: what you'd be paid this month on the 2024/25 table at the SAME grade and notch
+            // (increments and promotions happen either way, so arrears = only what the new CBA adds).
+            let baselineBasic = salaryTable[currentGrade][currentNotch][0];
+
+            salaries.push({year: curY, month: curM, basic: basicPay, baseline: baselineBasic, grade: currentGrade, notch: currentNotch, house: houseAllowances[currentGrade], on: i >= J});
+
+            curM++;
+            if (curM > 12) {
+                curM = 1;
+                curY++;
+            }
+        }
+        return salaries;
+    }
+
+    function calculate() {
+        // (usage is counted on the first real input by the user, not here: calculate() also runs on load and reset)
+
+        const startGrade = parseInt(document.getElementById("gradeSelect").value);
+        const startNotchIdx = parseInt(document.getElementById("notchSelect").value || 0);
+        const incMonth = parseInt(document.getElementById("incrementMonth").value);
+        
+        const activeGrade = getActiveGrade();
+        syncHouse();
+
+        const commuter = parseFloat(document.getElementById("commuterInput").value) || 0;
+        const pensionRate = (parseFloat(document.getElementById("pensionInput").value) || 0) / 100;
+        const deductNssf = document.getElementById("deductNssf").checked;
+        const startVal = document.getElementById("startMonth").value;
+
+        const parts = startVal.split("-");
+        const startYear = parseInt(parts[0]);
+        const startMonthIdx = parseInt(parts[1]) - 1;
+
+        const J = joinIx(), joiner = J > 0;
+        const timeline = getSalaryTimeline(startGrade, startNotchIdx, incMonth, J);
+        const startIdx = timeline.findIndex(t => t.year === startYear && t.month === (startMonthIdx + 1));   // month new salaries start
+
+        // Commuter on new terms in timeline month i. Old terms keep the current amount.
+        const commuterPhase = document.getElementById("commuterPhase").value;
+        const newCommuter = i => {
+            if (i < 1 || commuter >= 18000) return commuter;            // June 2025 baseline, or already at/above the RTWF rate
+            if (commuterPhase === "full") return 18000;
+            if (commuterPhase === "phased_impl") {
+                if (i < startIdx) return commuter;
+                return commuter + (18000 - commuter) * Math.min(Math.floor((i - startIdx) / 12) + 1, 3) / 3;
+            }
+            return commuter + (18000 - commuter) * Math.min(Math.floor((i - 1) / 12) + 1, 3) / 3;   // a third of the gap each July from 2025
+        };
+        const monthGain = i => timeline[i].on ? (timeline[i].basic - timeline[i].baseline) + (newCommuter(i) - commuter) : 0;   // what the new CBA adds in month i (0 before joining)
+        const afterImpl = joiner && J >= startIdx;   // joined after new salaries started: no arrears
+        const HM = Math.max(startIdx, J);            // headline month: new salaries start, or the first month for a later joiner
+
+        let targetTimelineItem = timeline[HM];
+        
+        let activeColIdx = 2;
+        if (startYear === 2025 && startMonthIdx >= 6 || startYear === 2026 && startMonthIdx < 6) activeColIdx = 1;
+        else if (startYear === 2026 && startMonthIdx >= 6 || startYear === 2027 && startMonthIdx < 6) activeColIdx = 2;
+        else if (startYear === 2027 && startMonthIdx >= 6 || startYear === 2028 && startMonthIdx < 6) activeColIdx = 3;
+        else if (startYear >= 2028) activeColIdx = 4;
+
+        let activeBasic = targetTimelineItem ? targetTimelineItem.basic : salaryTable[activeGrade][startNotchIdx][activeColIdx];
+        const startGradeNow = targetTimelineItem ? targetTimelineItem.grade : activeGrade;   // grade held when new salaries start
+        const house = houseAllowances[startGradeNow];
+        const commuterNew = newCommuter(HM);
+        let activeGross = activeBasic + house + commuterNew;
+
+        // 1. Headline Card 1
+        document.getElementById("hlCard1Title").innerText = `${monthNames[(5 + HM) % 12]} ${2025 + Math.floor((5 + HM) / 12)} basic pay · Grade ${startGradeNow} · notch ${targetTimelineItem ? targetTimelineItem.notch + 1 : startNotchIdx + 1}`;
+        document.getElementById("hlCard1Basic").innerText = formatCurrency(activeBasic);
+        document.getElementById("hlCard1Footer").innerText = `Plus commuter ${Math.round(commuterNew).toLocaleString()} + house ${house.toLocaleString()} = gross ${formatCurrency(activeGross)}`;
+
+        // 2. Headline Card 2 (2025/26 Arrears)
+        let totalArr2526 = 0;
+        for (let i = 1; i <= 12; i++) {
+            totalArr2526 += monthGain(i);
+        }
+        let instalment = totalArr2526 / 3;
+        document.getElementById("hlCard2Gross").innerText = formatCurrency(totalArr2526);
+        document.getElementById("hlCard2Instalments").innerText = `3 instalments of ${formatCurrency(instalment)}`;
+        document.getElementById("hlCard2Title").innerText = (afterImpl ? "Arrears" : joiner && J <= 12 ? `Arrears ${ixLabel(J)} – Jun 2026` : "Arrears Jul 2025 – Jun 2026") + " (gross)";
+        if (afterImpl) document.getElementById("hlCard2Instalments").innerText = `None: you joined after new salaries started (${ixLabel(startIdx)}), so you're paid the new rates from the start.`;
+        else if (joiner && J > 12) document.getElementById("hlCard2Instalments").innerText = "None: you joined after June 2026";
+
+        // 3. Headline Card 3 (Dynamic Preceding Arrears)
+        let totalArr2627 = 0;
+        for (let i = 13; i < timeline.length; i++) {
+            let tItem = timeline[i];
+            if (tItem.year < startYear || (tItem.year === startYear && tItem.month < (startMonthIdx + 1))) {   // before the start month only
+                totalArr2627 += monthGain(i);
+            }
+        }
+        let precedingMonthName = monthNames[(startMonthIdx - 1 + 12) % 12];
+        let precedingYear = startMonthIdx === 0 ? startYear - 1 : startYear;
+        document.getElementById("hlCard3Title").innerText = `Arrears ${ixLabel(Math.max(13, J)).substring(0, 3)} – ${precedingMonthName.substring(0, 3)} ${precedingYear} (gross)`;
+        document.getElementById("hlCard3Gross").innerText = formatCurrency(totalArr2627);
+        document.getElementById("hlCard3Sub").innerText = "Paid with the January 2027 salary";
+        if (afterImpl) {
+            document.getElementById("hlCard3Title").innerText = "First month on staff";
+            document.getElementById("hlCard3Gross").innerText = ixLabel(J);
+            document.getElementById("hlCard3Sub").innerText = `Grade ${timeline[J].grade} · notch ${timeline[J].notch + 1} · new rates`;
+        }
+
+        // Section 5: Cumulative Gain
+        let fyGains = [0, 0, 0, 0];
+        let fyNotches = [timeline[1], timeline[13], timeline[25], timeline[37]];   // July of each financial year
+
+        for (let i = 1; i <= 48 && i < timeline.length; i++) {
+            let fyIdx = Math.floor((i - 1) / 12);
+            if (fyIdx < 4) {
+                fyGains[fyIdx] += monthGain(i);
+            }
+        }
+
+        let maxGain = Math.max(...fyGains, 1);
+        let cumulativeSum = 0;
+        let fyLabels = ["2025/26", "2026/27", "2027/28", "2028/29"];
+        let sec5Html = "";
+        const f0 = J <= 1 ? 0 : Math.floor((J - 1) / 12);   // first financial year on staff
+        document.getElementById("sec5Title").innerText = `5. Cumulative gain from the new CBA, ${ixLabel(Math.max(1, J))} – Jun 2029`;
+
+        for (let f = f0; f < 4; f++) {
+            cumulativeSum += fyGains[f];
+            let pct = Math.min(100, Math.max(5, (fyGains[f] / maxGain) * 100));
+            const fItem = timeline[Math.max(1 + 12 * f, J)];
+            let fGrade = fItem.grade;
+            let fNotch = fItem.notch + 1;
+
+            sec5Html += `
+                <div class="sec5-item">
+                    <div>
+                        <div class="sec5-label">${fyLabels[f]}</div>
+                        <div class="sec5-sub">Grade ${fGrade} · notch ${fNotch}</div>
+                    </div>
+                    <div>
+                        <div class="sec5-bar-bg">
+                            <div class="sec5-bar-fill" style="width: ${pct}%;"></div>
+                        </div>
+                    </div>
+                    <div class="sec5-amounts">
+                        <div class="sec5-val">${formatCurrency(fyGains[f])}</div>
+                        <div class="sec5-cum">Cumulative ${formatCurrency(cumulativeSum)}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        sec5Html += `
+            <div class="sec5-total-row">
+                <div>Cumulative gain${joiner ? "" : ", 4 years"}</div>
+                <div>${formatCurrency(cumulativeSum)}</div>
+            </div>
+        `;
+        document.getElementById("section5Container").innerHTML = sec5Html;
+
+        // Salary Table HTML
+        const base2024 = salaryTable[startGrade][startNotchIdx][0];
+        let tJul25 = timeline.find(t => t.year === 2025 && t.month === 7) || timeline[1];
+        let tJul26 = timeline.find(t => t.year === 2026 && t.month === 7) || timeline[13];
+        let tJul27 = timeline.find(t => t.year === 2027 && t.month === 7) || timeline[25];
+        let tJul28 = timeline.find(t => t.year === 2028 && t.month === 7) || timeline[37];
+
+        let html = `<table>
+            <tr><th>Period / Rate</th><th>Basic</th><th>Allowances</th><th>Gross</th></tr>
+            ${afterImpl ? "" : `<tr><td>${joiner ? `First Payslip (${ixLabel(J)}, old terms)` : "Old Terms (June 2025)"}</td><td>${formatCurrency(base2024)}</td><td>${formatCurrency(houseAllowances[startGrade] + commuter)}</td><td>${formatCurrency(base2024 + houseAllowances[startGrade] + commuter)}</td></tr>`}
+            ${[...(joiner && (J - 1) % 12 !== 0 ? [[`From ${ixLabel(J)}`, timeline[J], J]] : []),
+               ["From Jul 2025", tJul25, 1], ["From Jul 2026", tJul26, 13], ["From Jul 2027", tJul27, 25], ["From Jul 2028", tJul28, 37]]
+               .filter(([, , i]) => i >= J).sort((a, b) => a[2] - b[2]).map(([lbl, t, i]) =>
+                `<tr><td>${lbl}</td><td>${formatCurrency(t.basic)}</td><td>${formatCurrency(t.house + newCommuter(i))}</td><td>${formatCurrency(t.basic + t.house + newCommuter(i))}</td></tr>`).join("")}
+        </table>`;
+        document.getElementById("salaryTableContainer").innerHTML = html;
+
+        // Take Home Breakdown Table: June 2025 (old terms) vs the month new salaries start
+        let oldBasic = base2024, houseOld = houseAllowances[startGrade], oldComm = commuter;
+        let oldLbl = joiner ? `First payslip (${ixLabel(J)})` : "June 2025 (Old)";
+        let newBasic = activeBasic, houseNew = house, newComm = commuterNew, newLbl = `${ixLabel(HM)} (New)`;
+        if (afterImpl) {   // already on new rates from the first payslip: compare it with July 2028
+            const tE = timeline[Math.max(37, J)];
+            oldBasic = timeline[J].basic; houseOld = timeline[J].house; oldComm = newCommuter(J); oldLbl = `First payslip (${ixLabel(J)})`;
+            newBasic = tE.basic; houseNew = tE.house; newComm = newCommuter(Math.max(37, J)); newLbl = ixLabel(Math.max(37, J));
+        }
+        const oldGross = oldBasic + houseOld + oldComm, newGross = newBasic + houseNew + newComm;
+        const dOld = deductions(oldGross, oldBasic, pensionRate, deductNssf);
+        const dNew = deductions(newGross, newBasic, pensionRate, deductNssf);
+        const row = (label, a, b, cls) => {
+            const ch = b - a, sign = ch > 0 ? "+" : ch < 0 ? "-" : "";
+            const fmtDed = v => (v < 0 ? "-" : "") + formatCurrency(Math.abs(v));
+            return `<tr${cls ? ` class="${cls}"` : ""}><td>${label}</td><td>${fmtDed(a)}</td><td>${fmtDed(b)}</td><td>${sign}${formatCurrency(Math.abs(ch))}</td></tr>`;
+        };
+        let compHtml = `<table>
+            <tr><th>Component</th><th>${oldLbl}</th><th>${newLbl}</th><th>Change</th></tr>
+            ${row("Basic Pay", oldBasic, newBasic)}
+            ${row("House Allowance", houseOld, houseNew)}
+            ${row("Commuter Allowance", oldComm, newComm)}
+            ${row("Gross Pay", oldGross, newGross, "highlight-row")}
+            ${row(`Pension (${(pensionRate*100).toFixed(1)}% of basic)`, -dOld.pension, -dNew.pension)}
+            ${deductNssf ? row("NSSF Tier I (6% of first 9,000)", -dOld.nssf.t1, -dNew.nssf.t1) + row("NSSF Tier II (6% of 9,000–108,000)", -dOld.nssf.t2, -dNew.nssf.t2) : ""}
+            ${row("SHIF (2.75%)", -dOld.shif, -dNew.shif)}
+            ${row("Housing Levy (1.5%)", -dOld.hl, -dNew.hl)}
+            ${row("Taxable Pay (after the above)", dOld.taxable, dNew.taxable)}
+            ${row("PAYE", -dOld.paye, -dNew.paye)}
+            ${row("Union Dues (2% of basic)", -dOld.union, -dNew.union)}
+            ${row("Est. Take-Home", dOld.net, dNew.net, "highlight-row")}
+        </table>
+        <p class="help-text" style="margin-top:8px">Pension, NSSF, SHIF and Housing Levy are deducted before PAYE (pension + NSSF relief capped at KES 30,000). SACCO and loans excluded.</p>`;
+        document.getElementById("takeHomeComparisonContainer").innerHTML = compHtml;
+        LASTK = { timeline, newCommuter, monthGain, commuter, startIdx, J, joiner, afterImpl, HM, totalArr2526, totalArr2627, instalment, activeBasic, startGradeNow, dOld, dNew, oldGross, newGross, oldLbl, newLbl, pensionRate, deductNssf };
+    }
+    let LASTK = null;   // last result, for the PDF report
+
+    // PDF: fill a summary of the inputs (shown only when printing), then open the print window ("Save as PDF").
+    function fillPrintSummary() {
+        const t = id => { const el = document.getElementById(id); return el.tagName === "SELECT" ? el.options[el.selectedIndex].text : el.value; };
+        const jn = document.getElementById("joinToggle").checked;
+        const rows = [...(jn ? [["Joined", t("joinMonth")], ["Grade (first payslip)", t("gradeSelect")], ["Notch (first payslip)", t("notchSelect")]]
+                             : [["Grade (June 2025)", t("gradeSelect")], ["Notch (June 2025)", t("notchSelect")]]),
+                      ["Increment month", t("incrementMonth")], ["New salaries start", t("startMonth")]];
+        [1, 2].forEach(n => { if (document.getElementById(`promo${n}Toggle`).checked) rows.push([n === 1 ? "First promotion" : "Second promotion", `${t(`promo${n}Grade`)}, ${t(`promo${n}Notch`)}, from ${t(`promo${n}Month`)}`]); });
+        rows.push(["House allowance", houseNow() ? `KES ${houseNow().toLocaleString("en-KE")}` : "Not entered (0)"], ["Commuter now", `KES ${Number(t("commuterInput")).toLocaleString()} (${t("commuterPhase")})`],
+                  ["Pension", `${t("pensionInput")}% of basic`], ["NSSF", document.getElementById("deductNssf").checked ? "Deducted (tiered)" : "Not deducted"]);
+        const today = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
+        document.getElementById("printSummary").innerHTML = `<h3>Your details (estimate printed ${today})</h3><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
+    }
+    window.addEventListener("beforeprint", fillPrintSummary);
+    // PDF report (print only). Page 1: at a glance. Page 2: month-by-month arrears. Page 3+: detailed projections.
+    function fillPrintReport() {
+        const K = LASTK, box = document.getElementById("printReport");
+        if (!K) { box.innerHTML = ""; return; }
+        const $ = id => document.getElementById(id);
+        const t = id => { const el = $(id); return el.tagName === "SELECT" ? el.options[el.selectedIndex].text : el.value; };
+        const n = v => Math.round(v).toLocaleString("en-KE");
+        const kes = v => "KES " + n(v);
+        const sg = v => (Math.round(v) > 0 ? "+" : Math.round(v) < 0 ? "−" : "") + Math.abs(Math.round(v)).toLocaleString("en-KE");
+        const esc = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+        const tl = K.timeline, J = Math.max(1, K.J), sIdx = K.startIdx, st = tl[K.HM];
+        const today = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
+        const dl = [
+            [K.joiner ? "First payslip" : "June 2025", `Grade ${$("gradeSelect").value} · notch ${+$("notchSelect").value + 1}`], ["Increment month", t("incrementMonth")], ["New salaries start", ixLabel(sIdx)],
+            ["Joined", K.joiner ? ixLabel(K.J) : "On staff June 2025"], ["Commuter now", `${n(K.commuter)} (${t("commuterPhase")})`],
+            ["House now", houseNow() ? `${n(houseNow())} (from your input)` : "Not entered (0)"]
+        ];
+        [1, 2].forEach(k => { if ($(`promo${k}Toggle`).checked) dl.push([`Promotion ${k}`, `Grade ${$(`promo${k}Grade`).value} · notch ${+$(`promo${k}Notch`).value + 1} from ${t(`promo${k}Month`)}${K.joiner && ixOf($(`promo${k}Month`).value) <= K.J ? " (ignored: not after joining)" : ""}`]); });
+        dl.push(["Pension", `${(K.pensionRate * 100).toFixed(1)}% of basic`], ["NSSF", K.deductNssf ? "Deducted (tiered)" : "Not deducted"]);
+        let arrB = 0; for (let i = 1; i < sIdx; i++) if (tl[i].on) arrB += tl[i].basic - tl[i].baseline;
+        const tot = K.totalArr2526 + K.totalArr2627;
+        const head = `<h3>CBA 2025–2029 pay and arrears estimate (KUDHEIHA)</h3>
+            <div class="meta">Printed ${today} · Unofficial estimate from the KUDHEIHA Return to Work Formula of 30 Oct 2026. KUDHEIHA and payroll have the final word.</div>`;
+
+        // ---- page 1: at a glance ----
+        const tiles = [["Total arrears (gross)", kes(tot), K.afterImpl ? "none: joined after new salaries started" : `3 instalments of ${n(K.instalment)} + ${n(K.totalArr2627)} in Jan 2027`],
+                       [`New basic, ${ixLabel(K.HM)}`, kes(K.activeBasic), `grade ${st.grade} · notch ${st.notch + 1}`],
+                       ["Monthly take-home", sg(K.dNew.net - K.dOld.net), `${n(K.dOld.net)} → ${n(K.dNew.net)}`]];
+        let p1 = `<div class="rep-page">${head}
+            <div class="tiles">${tiles.map(([k, v, s2], i) => `<div class="tile${i === 0 ? " hl" : ""}"><div class="k">${esc(k)}</div><div class="v">${v}</div><div class="s">${esc(s2)}</div></div>`).join("")}</div>
+            <dl class="grid">${dl.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+            <table><thead><tr><th>KES</th><th class="n">Gross</th><th class="n">Est. take-home</th></tr></thead><tbody>
+              <tr><td>Arrears Jul 2025 – Jun 2026 · 3 instalments of ${n(K.instalment)}</td><td class="n">${n(K.totalArr2526)}</td><td class="n muted">gross only</td></tr>
+              <tr><td>Arrears Jul 2026 – ${ixLabel(sIdx - 1)} · with the January 2027 salary</td><td class="n">${n(K.totalArr2627)}</td><td class="n muted">gross only</td></tr>
+              <tr class="tot"><td>Total arrears</td><td class="n">${n(tot)}</td><td class="n muted">gross only</td></tr>
+              <tr><td>Monthly pay, ${esc(K.oldLbl)}</td><td class="n">${n(K.oldGross)}</td><td class="n">${n(K.dOld.net)}</td></tr>
+              <tr><td>Monthly pay, ${esc(K.newLbl)}</td><td class="n">${n(K.newGross)}</td><td class="n">${n(K.dNew.net)}</td></tr>
+            </tbody></table>
+            <p class="muted">${K.afterImpl ? `No arrears: you joined after new salaries started (${ixLabel(sIdx)}).` : `Of the arrears, basic ${n(arrB)} and commuter ${n(tot - arrB)}. Arrears are shown gross; tax and union dues are deducted when they're paid.`}</p>
+            <div class="inpdf"><b>In this PDF</b> · Page 2: arrears month by month, to check against your payslips, and the yearly leave allowance · Page 3 onwards: salary schedules, take-home and cumulative gain to 2029.</div></div>`;
+
+        // ---- page 2: month by month ----
+        let p2 = `<div class="rep-page"><h3>Arrears month by month</h3><div class="meta">New terms minus what you were paid on 2024/25 terms, at the same grade and notch, for each month on staff.</div>`;
+        if (sIdx - 1 >= J) {
+            p2 += `<table><thead><tr><th>Month</th><th>Grade · notch</th><th class="n">Basic 2024/25</th><th class="n">Basic new</th><th class="n">Commuter old → new</th><th class="n">Arrears</th></tr></thead><tbody>`;
+            for (let i = J; i < sIdx; i++) {
+                const w = tl[i];
+                if (i === 13 && J < 13) p2 += `<tr class="sub"><td colspan="5">Subtotal Jul 2025 – Jun 2026 (3 instalments)</td><td class="n">${n(K.totalArr2526)}</td></tr>`;
+                p2 += `<tr><td>${ixLabel(i)}</td><td>${w.grade} · ${w.notch + 1}</td><td class="n">${n(w.baseline)}</td><td class="n">${n(w.basic)}</td><td class="n">${n(K.commuter)} → ${n(K.newCommuter(i))}</td><td class="n">${n(K.monthGain(i))}</td></tr>`;
+            }
+            if (sIdx - 1 >= 13) p2 += `<tr class="sub"><td colspan="5">Subtotal ${ixLabel(Math.max(13, J))} – ${ixLabel(sIdx - 1)}</td><td class="n">${n(K.totalArr2627)}</td></tr>`;
+            p2 += `<tr class="tot"><td colspan="5">Total arrears</td><td class="n">${n(tot)}</td></tr></tbody></table>`;
+        } else p2 += `<p>No arrears months: you joined after new salaries started.</p>`;
+        const inc = +$("incrementMonth").value, ann = tl.map((w, i) => ({ w, i })).filter(({ w, i }) => i >= 1 && w.on && w.month === inc && i > K.J);
+        if (ann.length) p2 += `<h4 style="margin:12px 0 2px;font-size:12px">Paid once a year, normally with the ${t("incrementMonth")} (increment-month) salary</h4>
+            <p class="muted" style="margin:0 0 4px">Annual leave allowance (Schedule II) is unchanged by the agreement, so it isn't part of the arrears or the monthly take-home comparison.</p>
+            <table><thead><tr><th>Month</th><th>Grade</th><th class="n">Leave allowance</th></tr></thead><tbody>
+            ${ann.map(({ w, i }) => `<tr><td>${ixLabel(i)}</td><td>${w.grade}</td><td class="n">${n(leaveAllowances[w.grade])}</td></tr>`).join("")}</tbody></table>`;
+        const ccDefault = $("commuterInput").value.trim() === $("commuterInput").defaultValue && $("commuterPhase").value === "phased";
+        const ccTxt = ccDefault ? `Commuter: you didn't change the defaults (KES ${n(+$("commuterInput").defaultValue)} now, phased over 3 years from Jul 2025), so that's what the estimate uses. Enter your own amount and method if yours differ.`
+                                : `Commuter, from your inputs: KES ${n(K.commuter)} now, ${t("commuterPhase").charAt(0).toLowerCase() + t("commuterPhase").slice(1)}.`;
+        p2 += `<p class="muted" style="margin-top:8px">House allowance (from your input) is the same on old and new terms, so it isn't part of the arrears. ${ccTxt} The RTWF doesn't set the timing.${K.joiner ? ` Pay counted from ${ixLabel(K.J)}, the month joined; first increment the next time the increment month comes round.` : ""}</p>
+            <div class="foot">Check any month diagonally against Schedule I of the KUDHEIHA RTWF (30 Oct 2026): "Basic 2024/25" is your grade and notch in the 2024/25 column, and "Basic new" is the same notch in that year's column, one notch down after each increment.</div></div>`;
+
+        // ---- page 3+: the detailed projections, as on screen (without the headline cards, already on page 1) ----
+        const panels = [...document.querySelectorAll(".layout > div:nth-child(2) > .panel")].map(el => el.outerHTML).join("");
+        const p3 = `<div class="rep-page last"><h3>Detailed projections</h3><div class="meta">The same results as on screen, July 2025 to June 2029.</div><div class="detail">${panels}</div></div>`;
+        box.innerHTML = `<div class="rep">${p1}${p2}${p3}</div>`;
+    }
+    window.addEventListener("beforeprint", fillPrintReport);
+    window.addEventListener("afterprint", () => { document.getElementById("printReport").innerHTML = ""; });   // don't leave figures in the page
+
+    function downloadPdf() { fillPrintSummary(); fillPrintReport(); try { window.print(); } catch (e) {} }
+
+    // Anonymous usage count: one "kudheiha-calculator-used" event per visit, on the first real input by the user.
+    // No values are sent. (Loading, refreshing or clearing the page does not count as use.)
+    let usedSent = false;
+    function markUsed(e) {
+        if (usedSent || !e.isTrusted) return;
+        const send = () => { if (window.goatcounter && window.goatcounter.count) { window.goatcounter.count({ path: "kudheiha-calculator-used", title: "KUDHEIHA Calculator Used", event: true }); usedSent = true; return true; } return false; };
+        if (!send()) { usedSent = true; let n = 0; const t = setInterval(() => { if (send() || ++n > 20) clearInterval(t); }, 500); }
+    }
+    document.querySelectorAll(".layout input, .layout select").forEach(el => { el.addEventListener("input", markUsed); el.addEventListener("change", markUsed); });
+
+    // Privacy (shared/public computers): nothing is stored, and browsers that refill forms from memory
+    // on refresh, back/forward or tab restore are overridden. Defaults come from the page itself.
+    function resetForm() {
+        document.querySelectorAll(".layout input, .layout select").forEach(el => {
+            if (el.type === "checkbox") el.checked = el.defaultChecked;
+            else if (el.tagName === "SELECT") { const o = [...el.options].find(o => o.defaultSelected) || el.options[0]; if (o) el.value = o.value; }
+            else el.value = el.defaultValue;
+        });
+        ["notchSelect", "promo1Notch", "promo2Notch"].forEach(id => document.getElementById(id).innerHTML = "");
+        document.getElementById("promo1Box").style.display = "none";
+        document.getElementById("promo2Box").style.display = "none";
+        const dev = document.getElementById("devInfoBox"); if (dev) dev.style.display = "none";
+        document.getElementById("printReport").innerHTML = "";
+        toggleJoin();         // back to the June 2025 labels; rebuilds notches for the default grade
+        calculate();
+    }
+    window.addEventListener("pageshow", () => setTimeout(resetForm, 0));   // first load, refresh, back/forward
+    window.addEventListener("pagehide", resetForm);                        // clear before the page is cached or closed
+
+    window.onload = function() {
+        updateNotches();
+        if (document.getElementById("promo1Toggle").checked) setSmartPromoDefaults(1);
+        if (document.getElementById("promo2Toggle").checked) setSmartPromoDefaults(2);
+        resetForm();
+    };
+</script>
+
+<!-- GoatCounter Analytics -->
+<script data-goatcounter="https://kagiricharles.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+
+</body>
+</html>
