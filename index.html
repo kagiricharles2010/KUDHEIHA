@@ -167,7 +167,7 @@
                 <div class="form-group">
                     <label for="gradeSelect" id="gradeLbl">Grade on June 2025 Payslip</label>
                     <select autocomplete="off" id="gradeSelect" onchange="updateNotches(); onBaseGradeChange(); calculate();">
-                        <option value="4">Grade 4</option><option value="3">Grade 3</option><option value="2" selected>Grade 2</option><option value="1">Grade 1</option>
+                        <option value="4">Grade 4</option><option value="3" selected>Grade 3</option><option value="2">Grade 2</option><option value="1">Grade 1</option>
                     </select>
                 </div>
 
@@ -223,7 +223,7 @@
                         <div class="form-group">
                             <label>New Grade</label>
                             <select autocomplete="off" id="promo1Grade" onchange="updatePromoNotches(1); calculate();">
-                                <option value="4">Grade 4</option><option value="3" selected>Grade 3</option><option value="2">Grade 2</option><option value="1">Grade 1</option>
+                                <option value="4" selected>Grade 4</option><option value="3">Grade 3</option><option value="2">Grade 2</option><option value="1">Grade 1</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -442,7 +442,7 @@
             if (currentSelected !== "" && parseInt(currentSelected) < salaries2024.length) {
                 if (i === parseInt(currentSelected)) opt.selected = true;
             } else {
-                if (i === 8 && grade === "2") opt.selected = true;
+                if (i === 8 && grade === "3") opt.selected = true;
             }
             opt.text = `Notch ${i + 1} (${formatCurrency(salaries2024[i][col])})`;
             notchSelect.add(opt);
