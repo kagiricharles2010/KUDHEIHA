@@ -261,9 +261,14 @@
                 <h2>2. Allowances & Deductions</h2>
                 
                 <div class="form-group">
-                    <label for="houseInput">House Allowance on Your Payslip (KES/month)</label>
-                    <input autocomplete="off" type="number" id="houseInput" placeholder="e.g. as on your payslip" oninput="calculate();">
-                    <div class="help-text">Not in the RTWF and not changed by it, so it doesn't affect arrears. Enter it for an accurate take-home figure; blank counts as 0.</div>
+                    <label for="houseDisplay">House Allowance</label>
+                    <input autocomplete="off" type="text" id="houseDisplay" readonly style="background:#e9ecef; font-weight:bold;">
+                    <div class="help-text">Set automatically for Grade 3 (KES 10,784) and Grade 4 (KES 11,800), and follows any promotion. The RTWF doesn't change it, so it doesn't affect arrears.</div>
+                </div>
+                <div class="form-group" id="houseManualBox" style="display:none;">
+                    <label for="houseInput">House Allowance for Grade 1 or 2 (KES/month)</label>
+                    <input autocomplete="off" type="number" id="houseInput" placeholder="As on your payslip" oninput="calculate();">
+                    <div class="help-text">No standard rate is available for Grades 1 and 2, so enter the amount on your payslip. Blank counts as 0.</div>
                 </div>
 
                 <div class="form-group">
@@ -366,10 +371,23 @@
 <script>
     // Schedule II annual leave allowance (unchanged by the agreement; paid once a year)
     const leaveAllowances = { 4: 5076, 3: 4913, 2: 4299, 1: 3867 };
-    // House allowance isn't in the KUDHEIHA RTWF: the user enters the amount on their payslip (same on old and new terms).
-    const houseAllowances = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    // House allowance (not in the RTWF; same on old and new terms). Standard rates for Grades 3 and 4;
+    // Grades 1 and 2 have no standard rate, so the user enters the amount on their payslip.
+    const HOUSE_STD = { 3: 10784, 4: 11800 };
+    const houseAllowances = { 1: 0, 2: 0, 3: HOUSE_STD[3], 4: HOUSE_STD[4] };
     function houseNow() { return Math.max(0, parseFloat(String(document.getElementById("houseInput").value).replace(/,/g, "")) || 0); }
-    function syncHouse() { const v = houseNow(); [1, 2, 3, 4].forEach(g => houseAllowances[g] = v); }
+    function gradesHeld() {   // grade on the starting payslip, then any promotion grades entered
+        const g = [parseInt(document.getElementById("gradeSelect").value)];
+        [1, 2].forEach(k => { if (document.getElementById(`promo${k}Toggle`).checked) g.push(parseInt(document.getElementById(`promo${k}Grade`).value)); });
+        return g.filter((x, i, a) => a.indexOf(x) === i);
+    }
+    function syncHouse() {
+        const v = houseNow(); houseAllowances[1] = v; houseAllowances[2] = v;
+        const held = gradesHeld(), manual = held.some(g => g <= 2);
+        document.getElementById("houseManualBox").style.display = manual ? "block" : "none";
+        document.getElementById("houseDisplay").value = held.map(g => g >= 3 ? `${formatCurrency(HOUSE_STD[g])} (Grade ${g})`
+            : (v ? `${formatCurrency(v)} (Grade ${g}, your entry)` : `Grade ${g}: enter below`)).join(" → ");
+    }
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -804,7 +822,7 @@
                              : [["Grade (June 2025)", t("gradeSelect")], ["Notch (June 2025)", t("notchSelect")]]),
                       ["Increment month", t("incrementMonth")], ["New salaries start", t("startMonth")]];
         [1, 2].forEach(n => { if (document.getElementById(`promo${n}Toggle`).checked) rows.push([n === 1 ? "First promotion" : "Second promotion", `${t(`promo${n}Grade`)}, ${t(`promo${n}Notch`)}, from ${t(`promo${n}Month`)}`]); });
-        rows.push(["House allowance", houseNow() ? `KES ${houseNow().toLocaleString("en-KE")}` : "Not entered (0)"], ["Commuter now", `KES ${Number(t("commuterInput")).toLocaleString()} (${t("commuterPhase")})`],
+        rows.push(["House allowance", document.getElementById("houseDisplay").value], ["Commuter now", `KES ${Number(t("commuterInput")).toLocaleString()} (${t("commuterPhase")})`],
                   ["Pension", `${t("pensionInput")}% of basic`], ["NSSF", document.getElementById("deductNssf").checked ? "Deducted (tiered)" : "Not deducted"]);
         const today = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
         document.getElementById("printSummary").innerHTML = `<h3>Your details (estimate printed ${today})</h3><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
@@ -825,7 +843,7 @@
         const dl = [
             [K.joiner ? "First payslip" : "June 2025", `Grade ${$("gradeSelect").value} · notch ${+$("notchSelect").value + 1}`], ["Increment month", t("incrementMonth")], ["New salaries start", ixLabel(sIdx)],
             ["Joined", K.joiner ? ixLabel(K.J) : "On staff June 2025"], ["Commuter now", `${n(K.commuter)} (${t("commuterPhase")})`],
-            ["House now", houseNow() ? `${n(houseNow())} (from your input)` : "Not entered (0)"]
+            ["House allowance", $("houseDisplay").value]
         ];
         [1, 2].forEach(k => { if ($(`promo${k}Toggle`).checked) dl.push([`Promotion ${k}`, `Grade ${$(`promo${k}Grade`).value} · notch ${+$(`promo${k}Notch`).value + 1} from ${t(`promo${k}Month`)}${K.joiner && ixOf($(`promo${k}Month`).value) <= K.J ? " (ignored: not after joining)" : ""}`]); });
         dl.push(["Pension", `${(K.pensionRate * 100).toFixed(1)}% of basic`], ["NSSF", K.deductNssf ? "Deducted (tiered)" : "Not deducted"]);
@@ -871,7 +889,7 @@
         const ccDefault = $("commuterInput").value.trim() === $("commuterInput").defaultValue && $("commuterPhase").value === "phased";
         const ccTxt = ccDefault ? `Commuter: you didn't change the defaults (KES ${n(+$("commuterInput").defaultValue)} now, phased over 3 years from Jul 2025), so that's what the estimate uses. Enter your own amount and method if yours differ.`
                                 : `Commuter, from your inputs: KES ${n(K.commuter)} now, ${t("commuterPhase").charAt(0).toLowerCase() + t("commuterPhase").slice(1)}.`;
-        p2 += `<p class="muted" style="margin-top:8px">House allowance (from your input) is the same on old and new terms, so it isn't part of the arrears. ${ccTxt} The RTWF doesn't set the timing.${K.joiner ? ` Pay counted from ${ixLabel(K.J)}, the month joined; first increment the next time the increment month comes round.` : ""}</p>
+        p2 += `<p class="muted" style="margin-top:8px">House allowance is the same on old and new terms, so it isn't part of the arrears. ${ccTxt} The RTWF doesn't set the timing.${K.joiner ? ` Pay counted from ${ixLabel(K.J)}, the month joined; first increment the next time the increment month comes round.` : ""}</p>
             <div class="foot">Check any month diagonally against Schedule I of the KUDHEIHA RTWF (30 Oct 2026): "Basic 2024/25" is your grade and notch in the 2024/25 column, and "Basic new" is the same notch in that year's column, one notch down after each increment.</div></div>`;
 
         // ---- page 3+: the detailed projections, as on screen (without the headline cards, already on page 1) ----
